@@ -502,7 +502,7 @@ char* Broker_recordFFDC(char* symptoms)
 
 	strftime(ptr, 80, "FFDC.CWNAN.%Y%m%d.%H%M%S.", timeinfo);
 #if defined(GETTIMEOFDAY)
-	sprintf(&ptr[26], ".%.3ld.dmp", ts.tv_usec / 1000);
+	sprintf(&ptr[26], ".%.3lu.dmp", ts.tv_usec / 1000L);
 #else
 	sprintf(&ptr[26], ".%.3u.dmp", ts.millitm);
 #endif
@@ -515,7 +515,7 @@ char* Broker_recordFFDC(char* symptoms)
 		fprintf(file, "Version      :- %s\n", BrokerState.version);
 		fprintf(file, "Build        :- %s\n", BrokerState.timestamp);
 		fprintf(file, "Features     :- %s\n", features);
-		fprintf(file, "Pointer size :- %ld bytes\n", sizeof(void*));
+		fprintf(file, "Pointer size :- %u bytes\n", (unsigned int)sizeof(void*));
 		fprintf(file, "Date/Time    :- %s\n", asctime(timeinfo));
 		fprintf(file, "Reason       :- %s\n\n", symptoms);
 		/* potential additions:
