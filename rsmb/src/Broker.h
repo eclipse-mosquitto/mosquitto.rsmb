@@ -28,6 +28,12 @@
 
 #define assert(x) if (!x) printf("Assertion error %s\n", # x);
 
+#ifdef __GNUC__
+  #define ATTR_UNUSED __attribute__((unused))
+#else
+  #define ATTR_UNUSED
+#endif
+
 /*BE
 def INT { n32 "value" }
 def TMP { n32 "tmp" }

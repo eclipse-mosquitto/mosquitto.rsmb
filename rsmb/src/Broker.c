@@ -249,8 +249,8 @@ int main(int argc, char* argv[])
 #define BROKER_VERSION "1.3.0.2" /* __VERSION__ */
 #define PRODUCT_NAME "Really Small Message Broker"
 
-	static char* broker_version_eye = NULL;
-	static char* broker_timestamp_eye = NULL;
+	static char* broker_version_eye ATTR_UNUSED = NULL;
+	static char* broker_timestamp_eye ATTR_UNUSED = NULL;
 
 	FUNC_ENTRY_NOLOG;
 	broker_timestamp_eye = "RSMB_Timestamp " BUILD_TIMESTAMP;

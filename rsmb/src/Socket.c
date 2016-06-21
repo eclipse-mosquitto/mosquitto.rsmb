@@ -1423,7 +1423,6 @@ void Socket_close(int socket)
 {
 #if !defined(SINGLE_LISTENER)
 	ListElement* current = NULL;
-	int found = 0;
 #endif
 #if defined(USE_POLL)
 	struct socket_info* si;
@@ -1463,12 +1462,9 @@ void Socket_close(int socket)
 		if (ListRemoveItem( ((Listener*)current->content)->connections, &socket, intcompare))
 		{
 			Log(TRACE_MIN, 0, "Removed socket %d from listener %d", socket,((Listener*)current->content)->port);
-			found = 1;
 			break;
 		}
 	}
-	/*if (!found)
-		Log(TRACE_MIN, 34, NULL, socket);*/
 #endif
 
 #if !defined(USE_POLL)

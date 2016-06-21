@@ -177,8 +177,7 @@ void MQTTSProtocol_housekeeping()
 				time(&(now));
 			if (difftime(now, listener->advertise->last) > listener->advertise->interval)
 			{
-				int rc = 0;
-				rc = MQTTSPacket_send_advertise(listener->socket,
+				MQTTSPacket_send_advertise(listener->socket,
 						listener->advertise->address, listener->advertise->gateway_id,
 						listener->advertise->interval);
 				listener->advertise->last = now;
