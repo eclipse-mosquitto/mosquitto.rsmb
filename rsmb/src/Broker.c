@@ -47,7 +47,6 @@
 #include <signal.h>
 #include <stdlib.h>
 #if !defined(WIN32)
-#include <ucontext.h>
 #define GETTIMEOFDAY 1
 #endif
 
