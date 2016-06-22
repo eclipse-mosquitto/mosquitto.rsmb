@@ -1,0 +1,14 @@
+language: c
+compiler:
+  - gcc
+  - clang
+
+os:
+  - linux
+  - osx
+
+install:
+  - true
+
+script:
+  - cd rsmb/src && make
