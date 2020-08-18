@@ -1770,10 +1770,14 @@ char* Socket_getaddrname(struct sockaddr* sa, int sock)
  */
 #define ADDRLEN INET6_ADDRSTRLEN+1
 /**
+ * maximum length of the scope string
+ */
+#define SCOPELEN 3
+/**
  * maximum length of the port string
  */
 #define PORTLEN 10
-	static char addr_string[ADDRLEN + PORTLEN];
+	static char addr_string[ADDRLEN + SCOPELEN + PORTLEN];
 
 #if defined(WIN32)
 	int buflen = ADDRLEN*2;
@@ -1797,6 +1801,15 @@ char* Socket_getaddrname(struct sockaddr* sa, int sock)
 		struct sockaddr_in6 *sin = (struct sockaddr_in6 *)sa;
 		if (inet_ntop(AF_INET6, &sin->sin6_addr, addr_string, ADDRLEN) == NULL)
 			Socket_error("inet_ntop", sock);
+
+		/* check if link-local; append scope_id to address if so */
+		char ll[] = "fe80::";
+		struct in6_addr link_local_prefix;
+		inet_pton(AF_INET6, ll, &link_local_prefix);
+		if (!memcmp(&link_local_prefix, &sin->sin6_addr, 8))
+			sprintf(&addr_string[strlen(addr_string)], "%%%d", sin->sin6_scope_id);
+
+		/* append port */
 		sprintf(&addr_string[strlen(addr_string)], ":%d", ntohs(sin->sin6_port));
 	}
 #endif

@@ -694,18 +694,36 @@ int MQTTSPacket_sendPacketBuffer(int socket, char* addr, PacketBuffer buf)
 {
 	char *port;
 	int rc = 0;
+	char a[strlen(addr) + 1];
 
 	FUNC_ENTRY;
-	port = strrchr(addr, ':') + 1;
+
+	/* grab a copy so we can modify it */
+	strcpy(a, addr);
+
+	/* decode and remove port */
+	port = strrchr(a, ':') + 1;
 	*(port - 1) = '\0';
-	if (strchr(addr, ':'))
+
+	/* check if IPv6 */
+	if (strchr(a, ':'))
 	{
 		struct sockaddr_in6 cliaddr6;
 		memset(&cliaddr6, '\0', sizeof(cliaddr6));
 		cliaddr6.sin6_family = AF_INET6;
-		if (inet_pton(cliaddr6.sin6_family, addr, &cliaddr6.sin6_addr) == 0)
+
+		/* decode and remove scope ID */
+		if (strchr(a, '%')) {
+			char *scope = strrchr(a, '%') + 1;
+			*(scope - 1) = '\0';
+			cliaddr6.sin6_scope_id = atoi(scope);
+		}
+
+		if (inet_pton(cliaddr6.sin6_family, a, &cliaddr6.sin6_addr) == 0)
 			Socket_error("inet_pton", socket);
+
 		cliaddr6.sin6_port = htons(atoi(port));
+
 		if ((rc = sendto(socket, buf.data, buf.len, 0, (const struct sockaddr*)&cliaddr6, sizeof(cliaddr6))) == SOCKET_ERROR)
 			Socket_error("sendto", socket);
 		else
@@ -715,7 +733,7 @@ int MQTTSPacket_sendPacketBuffer(int socket, char* addr, PacketBuffer buf)
 	{
 		struct sockaddr_in cliaddr;
 		cliaddr.sin_family = AF_INET;
-		if (inet_pton(cliaddr.sin_family, addr, &cliaddr.sin_addr.s_addr) == 0)
+		if (inet_pton(cliaddr.sin_family, a, &cliaddr.sin_addr.s_addr) == 0)
 			Socket_error("inet_pton", socket);
 		cliaddr.sin_port = htons(atoi(port));
 		if ((rc = sendto(socket, buf.data, buf.len, 0, (const struct sockaddr*)&cliaddr, sizeof(cliaddr))) == SOCKET_ERROR)
@@ -723,7 +741,6 @@ int MQTTSPacket_sendPacketBuffer(int socket, char* addr, PacketBuffer buf)
 		else
 			rc = 0;
 	}
-	*(port - 1) = ':';
 
 	FUNC_EXIT_RC(rc);
 	return rc;
