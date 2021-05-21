@@ -144,7 +144,7 @@ class MessageHeaders:
     assert 2 <= self.Length <= 65535
     if self.Length < 256:
       buffer = chr(self.Length)
-      print "length", self.Length
+      print("length", self.Length)
     else:
       self.Length += 2
       buffer = chr(1) + writeInt16(self.Length)
@@ -490,7 +490,7 @@ class Publishes(Packets):
   def pack(self):
     buffer = self.Flags.pack()
     if self.Flags.TopicIdType in [TOPIC_NORMAL, TOPIC_PREDEFINED, 3]:
-      print "topic id is", self.TopicId
+      print("topic id is", self.TopicId)
       buffer += writeInt16(self.TopicId)
     elif self.Flags.TopicIdType == TOPIC_SHORTNAME:
       buffer += (self.TopicName + "  ")[0:2]
@@ -975,7 +975,7 @@ objects = [Advertises, SearchGWs, GWInfos, None,
            Pingreqs, Pingresps, Disconnects, None,
            WillTopicUpds, WillTopicResps, WillMsgUpds, WillMsgResps]
 
-def unpackPacket((buffer, address)):
+def unpackPacket(buffer, address):
   if MessageType(buffer) != None:
     packet = objects[MessageType(buffer)]()
     packet.unpack(buffer)
@@ -984,22 +984,22 @@ def unpackPacket((buffer, address)):
   return packet, address
 
 if __name__ == "__main__":
-  print "Object string representations"
+  print("Object string representations")
   for o in objects:
     if o:
-      print o()
+      print(o())
       
-  print "\nComparisons"
+  print("\nComparisons")
   for o in [Flags] + objects:
     if o:
       o1 = o()
       o2 = o()
       o2.unpack(o1.pack())
       if o1 != o2:
-        print "error! ", str(o1.mh) if hasattr(o1, "mh") else o1.__class__.__name__
-        print str(o1)
-        print str(o2)
+        print("error! ", str(o1.mh) if hasattr(o1, "mh") else o1.__class__.__name__)
+        print(str(o1))
+        print(str(o2))
       else:
-        print "ok ", str(o1.mh) if hasattr(o1, "mh") else o1.__class__.__name__
+        print("ok ", str(o1.mh) if hasattr(o1, "mh") else o1.__class__.__name__)
   
 
