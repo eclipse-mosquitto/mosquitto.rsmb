@@ -27,7 +27,10 @@ include "LinkedList"
 include "Clients"
 BE*/
 
+#ifndef _BOOL
+#define _BOOL
 typedef unsigned int bool;
+#endif
 
 #define PRIVATE_PROTOCOL_VERSION 131  /**< protocol version used for noLocal subscriptions */
 #define BAD_MQTT_PACKET -4				/**< completion code for an ill-formed packet */
