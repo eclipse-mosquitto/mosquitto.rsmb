@@ -2,3 +2,4 @@ rsmb/src/broker
 rsmb/src/broker_dbg
 rsmb/src/broker_mqtts
 rsmb/src/rsmb.ini
+rsmb/platform.io/RSMB/sdkconfig.default.old
