@@ -1311,6 +1311,7 @@ int Socket_writev(int socket, iobuf* iovecs, int count, unsigned long* bytes)
 	}
 #else
 	*bytes = 0L;
+
 	rc = writev(socket, iovecs, count);
 	if (rc == SOCKET_ERROR)
 	{
@@ -1356,11 +1357,18 @@ int Socket_putdatas(int socket, char* buf0, int buf0len, int count, char** buffe
 
 	iovecs[0].iov_base = buf0;
 	iovecs[0].iov_len = buf0len;
-	for (i = 0; i < count; i++)
+
+	int targetbufs = 0;
+	for (i = 0; i < count;i++)
 	{
-		iovecs[i+1].iov_base = buffers[i];
-		iovecs[i+1].iov_len = buflens[i];
+		if(buflens[i] > 0)
+		{
+			iovecs[targetbufs+1].iov_base = buffers[i];
+			iovecs[targetbufs+1].iov_len = buflens[i];
+			targetbufs++;
+		}
 	}
+	count = targetbufs;
 
 	if ((rc = Socket_writev(socket, iovecs, count+1, &bytes)) != SOCKET_ERROR)
 	{
