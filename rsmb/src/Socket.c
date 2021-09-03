@@ -1755,7 +1755,9 @@ char* Socket_gethostname()
 	static char buf[HOST_NAME_MAX+1] = "";
 
 #ifdef ESP_PLATFORM
-	tcpip_adapter_get_hostname(TCPIP_ADAPTER_IF_STA, ((const char **)(buf)));
+	const char *pHostName = buf;
+	tcpip_adapter_get_hostname(TCPIP_ADAPTER_IF_STA, &pHostName);
+	snprintf(buf, HOST_NAME_MAX+1, "%s", pHostName);
 #else
 	gethostname(buf, HOST_NAME_MAX+1);
 #endif
