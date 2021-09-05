@@ -159,6 +159,17 @@ void HUPHandler(int sig)
 
 
 #if !defined(WIN32)
+#ifdef ESP_PLATFORM
+void linux_segv(int signo, siginfo_t* info, void* context)
+{
+	const char *signal_codes[3] = {"", "SEGV_MAPERR", "SEGV_ACCERR"};
+	static char symptoms[1024];
+
+	sprintf(symptoms, "SEGV information\n"
+			"info.si_signo = %d\n"
+			"info.si_code  = %d (%s)\n",
+			info->si_signo, info->si_code, signal_codes[info->si_code]);
+#else
 void linux_segv(int signo, siginfo_t* info, void* context)
 {
 	const char *signal_codes[3] = {"", "SEGV_MAPERR", "SEGV_ACCERR"};
@@ -170,6 +181,7 @@ void linux_segv(int signo, siginfo_t* info, void* context)
 			"info.si_code  = %d (%s)\n"
 			"info.si_addr  = %p\n",
 			info->si_signo, info->si_errno, info->si_code, signal_codes[info->si_code], info->si_addr);
+#endif
 #else
 /**
  * Normal segv handling function
@@ -187,6 +199,7 @@ void segv(int sig)
 	exit(-1);
 }
 
+#ifndef ESP_PLATFORM
 
 int set_sigsegv()
 {
@@ -196,7 +209,6 @@ int set_sigsegv()
 #else
 	struct sigaction action;
 	void linux_segv(int signo, siginfo_t* info, void* context);
-
 	action.sa_flags = SA_SIGINFO; /* indicates the sa_sigaction field is to be used */
 	action.sa_sigaction = linux_segv;
 	sigemptyset(&action.sa_mask);
@@ -205,7 +217,7 @@ int set_sigsegv()
 #endif
 }
 
-
+#endif
 
 void getopts(int argc, char** argv)
 {
@@ -320,11 +332,13 @@ int Broker_startup()
 	int rc;
 
 	FUNC_ENTRY;
+	#if !defined(ESP_PLATFORM)
 	signal(SIGINT, finish);
 	signal(SIGTERM, finish);
 	signal(SIGHUP, HUPHandler);
 	#if !defined(_DEBUG)
 		set_sigsegv();
+	#endif
 	#endif
 	
 	BrokerState.clients = TreeInitialize(clientSocketCompare);

@@ -204,7 +204,11 @@ int Messages_findMyLocation(char* buf, int bufsize)
 	rc = GetModuleFileName(NULL, wbuf, bufsize);
 	wcstombs(buf, wbuf, bufsize);
 #else /* Linux */
+#ifdef ESP_PLATFORM
+    rc = sprintf(buf, "/sdcard/dummy.exe");
+#else
 	rc = (int)readlink("/proc/self/exe", buf, bufsize);
+#endif
 #endif
 	if (rc > 0 && rc < bufsize)
 	{
@@ -244,13 +248,15 @@ int Messages_initialize(BrokerStates* bstate)
 	{
 		char fullfn[256];
 		sprintf(fullfn, "..%cmessages%c%s", sep, sep, fn);
+
 		if ((rfile = fopen(fullfn, "r")) == NULL)
 		{
 			if (Messages_findMyLocation(fullfn, sizeof(fullfn)) == 0)
 			{
 				int dirlength = strlen(fullfn);
-				
+
 				snprintf(&fullfn[dirlength], sizeof(fullfn) - dirlength, "%c%s", sep, fn);
+
 				rfile = fopen(fullfn, "r");
 				if (rfile == NULL)
 				{

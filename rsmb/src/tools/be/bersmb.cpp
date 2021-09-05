@@ -141,7 +141,7 @@ public:
 	   MemEntry* entry = head;
 	   while (entry != NULL)
 	   {
-		   printf("f0x%lX = m[0x%lX]s[%d]\n", entry->fileaddr, entry->memoryaddr, entry->size);
+		   printf("f0x%lX = m[0x%llX]s[%d]\n", entry->fileaddr, entry->memoryaddr, entry->size);
 		   entry = entry->next;
 	   }
 	   printf("------------\n");
