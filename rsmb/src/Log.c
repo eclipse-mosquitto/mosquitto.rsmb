@@ -34,7 +34,11 @@
 #include <stdlib.h>
 
 #if !defined(WIN32)
+#ifdef ESP_PLATFORM
+#include <esp_log.h>
+#else
 #include <syslog.h>
+#endif
 #define GETTIMEOFDAY 1
 #else
 #define snprintf _snprintf
@@ -399,8 +403,13 @@ void Log(int log_level, int msgno, char* format, ...)
 #if !defined(WIN32)
 		if (trace_settings.isdaemon)
 		{
+#ifdef ESP_PLATFORM
+			static char priorities[] = { 5, 5, 5, 5, 4, 4, 3, 3, 2, 2, 1, 0};
+			esp_log_write(priorities[log_level], "mqtt", "%s", &msg_buf[22]);
+#else
 			static char priorities[] = { 7, 7, 7, 7, 6, 6, 5, 5, 4, 3, 1, 0};
 			syslog(priorities[log_level], "%s", &msg_buf[22]);
+#endif
 		}
 		else
 		{

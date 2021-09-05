@@ -141,7 +141,9 @@ void Socket_outInitialize()
 	WSAStartup(winsockVer, &wsd);
 #else
 	FUNC_ENTRY;
+	#if !defined(ESP_PLATFORM)
 	signal(SIGPIPE, SIG_IGN);
+	#endif
 #endif
 	SocketBuffer_initialize();
 	
@@ -323,11 +325,15 @@ int Socket_joinMulticastGroup(int sock, int ipv6, char* mcast)
 			struct ifreq ifreq;
 
 			strncpy(ifreq.ifr_name, mcast_interface, IFNAMSIZ);
+#ifdef ESP_PLATFORM
+#warning Socket_joinMulticastGroup() broken on ESP-IDF
+#else
 			if (ioctl(sock, SIOCGIFADDR, &ifreq) >= 0)
 				memcpy(&mreq.imr_interface,
 						&((struct sockaddr_in *) &ifreq.ifr_addr)->sin_addr,
 						sizeof(struct in_addr));
 			else
+#endif
 				Socket_error("ioctl SIOCGIFADDR", sock);
 #endif
 		}
@@ -1276,6 +1282,10 @@ int Socket_noPendingWrites(int socket)
 }
 #endif
 
+#ifdef ESP_PLATFORM
+#include <lwip/sockets.h>
+#define 	writev(s, iov, iovcnt)   lwip_writev(s,iov,iovcnt)
+#endif
 
 /**
  *  Attempts to write a series of iovec buffers to a socket in *one* system call so that
@@ -1301,6 +1311,7 @@ int Socket_writev(int socket, iobuf* iovecs, int count, unsigned long* bytes)
 	}
 #else
 	*bytes = 0L;
+
 	rc = writev(socket, iovecs, count);
 	if (rc == SOCKET_ERROR)
 	{
@@ -1346,11 +1357,18 @@ int Socket_putdatas(int socket, char* buf0, int buf0len, int count, char** buffe
 
 	iovecs[0].iov_base = buf0;
 	iovecs[0].iov_len = buf0len;
-	for (i = 0; i < count; i++)
+
+	int targetbufs = 0;
+	for (i = 0; i < count;i++)
 	{
-		iovecs[i+1].iov_base = buffers[i];
-		iovecs[i+1].iov_len = buflens[i];
+		if(buflens[i] > 0)
+		{
+			iovecs[targetbufs+1].iov_base = buffers[i];
+			iovecs[targetbufs+1].iov_len = buflens[i];
+			targetbufs++;
+		}
 	}
+	count = targetbufs;
 
 	if ((rc = Socket_writev(socket, iovecs, count+1, &bytes)) != SOCKET_ERROR)
 	{
@@ -1721,6 +1739,10 @@ int Socket_continueWrites(fd_set* pwset)
 }
 #endif
 
+#ifdef ESP_PLATFORM
+#include "esp_netif.h"
+#endif
+
 /**
  *  Get the hostname of the computer we are running on
  *  @return the hostname
@@ -1731,7 +1753,14 @@ char* Socket_gethostname()
 	#define HOST_NAME_MAX 256 /* 255 is a POSIX limit/256 a Windows max for this call */
 #endif
 	static char buf[HOST_NAME_MAX+1] = "";
+
+#ifdef ESP_PLATFORM
+	const char *pHostName = buf;
+	tcpip_adapter_get_hostname(TCPIP_ADAPTER_IF_STA, &pHostName);
+	snprintf(buf, HOST_NAME_MAX+1, "%s", pHostName);
+#else
 	gethostname(buf, HOST_NAME_MAX+1);
+#endif
 	return buf;
 }
 

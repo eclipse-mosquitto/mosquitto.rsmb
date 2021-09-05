@@ -26,7 +26,9 @@
 #define true 1
 #define false 0
 
+#ifndef assert
 #define assert(x) if (!x) printf("Assertion error %s\n", # x);
+#endif
 
 #ifdef __GNUC__
   #define ATTR_UNUSED __attribute__((unused))
