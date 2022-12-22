@@ -288,7 +288,7 @@ int MQTTSPacket_send_pingResp(Clients* client);
 int MQTTSPacket_send_willTopicResp(Clients* client);
 int MQTTSPacket_send_willMsgResp(Clients* client);
 int MQTTSPacket_send_regAck(Clients* client, int msgId, int topicId, char rc);
-int MQTTSPacket_send_puback(Clients* client, int msgId, char returnCode);
+int MQTTSPacket_send_puback(Clients* client, int topicId, int msgId, char returnCode);
 int MQTTSPacket_send_pubrec(Clients* client, int msgId);
 int MQTTSPacket_send_pubrel(Clients* client, int msgId);
 int MQTTSPacket_send_pubcomp(Clients* client, int msgId);
