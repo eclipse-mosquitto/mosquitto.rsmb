@@ -967,7 +967,7 @@ int MQTTSPacket_send_publish(Clients* client, MQTTS_Publish* pub)
 }
 
 
-int MQTTSPacket_send_puback(Clients* client, /*char* shortTopic, int topicId, */ int msgId, char returnCode)
+int MQTTSPacket_send_puback(Clients* client, int topicId, int msgId, char returnCode)
 {
 	MQTTS_PubAck packet;
 	char *buf, *ptr;
@@ -985,7 +985,7 @@ int MQTTSPacket_send_puback(Clients* client, /*char* shortTopic, int topicId, */
 		writeChar(&ptr, shortTopic[1]);
 	}
 	else */
-		writeInt(&ptr, 0); /* writeInt(&ptr, topicId); */
+		writeInt(&ptr, topicId); /* writeInt(&ptr, 0);  */
 	writeInt(&ptr, msgId);
 	writeChar(&ptr, returnCode);
 
