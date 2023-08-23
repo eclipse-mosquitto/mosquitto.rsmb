@@ -2,3 +2,5 @@ rsmb/src/broker
 rsmb/src/broker_dbg
 rsmb/src/broker_mqtts
 rsmb/src/rsmb.ini
+/*/*.pro.user
+build-*

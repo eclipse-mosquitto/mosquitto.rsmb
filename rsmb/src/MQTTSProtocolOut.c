@@ -41,7 +41,7 @@ void Bridge_subscribe(BridgeConnections* bc, Clients* client);
 
 Clients* MQTTSProtocol_create_multicast(char* ip_address, char* clientID, int loopback)
 { /* outgoing connection */
-	int i, port;
+    int i, port, rc;
 	Clients* newc = NULL;
 	char* intface = NULL;
 	int ipv6 = 0;

@@ -410,6 +410,7 @@ int MQTTSProtocol_handleConnects(void* pack, int sock, char* clientAddr, Clients
 	}
 	else
 	{
+        Clients* client_by_addr = Protocol_getclientbyaddr(clientAddr);
 		client = (Clients*)(elem->content);
 		if (client->connected)
 		{
@@ -417,7 +418,7 @@ int MQTTSProtocol_handleConnects(void* pack, int sock, char* clientAddr, Clients
 			if (client->socket != sock)
 				Socket_close(client->socket);
 		}
-		client->socket = sock;
+        /* don't set for re-add client // client->socket = sock; */
 		client->connected = 0; /* Do not connect until we know the connack has been sent */
 		client->connect_state = 0;
 		client->good = 1;
@@ -442,14 +443,14 @@ int MQTTSProtocol_handleConnects(void* pack, int sock, char* clientAddr, Clients
 		MQTTSProtocol_emptyRegistrationList(client->registrations);
 		
 		/* have to remove and re-add client so it is in the right order for new socket */
-		if (client->socket != sock)
-		{
-			TreeRemoveNodeIndex(bstate->mqtts_clients, elem, 1);
-			TreeRemoveKeyIndex(bstate->mqtts_clients, &client->socket, 0);
-			client->socket = sock;
-			TreeAdd(bstate->mqtts_clients, client, sizeof(Clients) + strlen(client->clientID)+1 + 3*sizeof(List));
-		}
-
+        if (client_by_addr) {
+            TreeRemoveNodeIndex(bstate->mqtts_clients, elem, 1);
+            TreeRemoveKeyIndex(bstate->mqtts_clients, &client->socket, 0);
+            /* always set outside  // client->socket = sock; */
+            TreeAdd(bstate->mqtts_clients, client, sizeof(Clients) + strlen(client->clientID)+1 + 3*sizeof(List));
+        }
+        /* always set */
+        client->socket = sock;
 		client->keepAliveInterval = connect->keepAlive;
 		client->pendingRegistration = NULL;
 #if !defined(NO_BRIDGE)
@@ -464,6 +465,7 @@ int MQTTSProtocol_handleConnects(void* pack, int sock, char* clientAddr, Clients
 		else
 		{
 			client->connected = 1;
+            existingClient = 1;
 			rc = MQTTSPacket_send_connack(client,0); /* send response */
 		}
 	}
@@ -515,8 +517,10 @@ int MQTTSProtocol_handleWillMsgs(void* pack, int sock, char* clientAddr, Clients
 		MQTTProtocol_setWillMsg(client, willMsg->willMsg);
 		willMsg->willMsg = NULL;
 		client->connect_state = 0;
-		client->connected = 1;
+        client->connected = 1;
 		rc = MQTTSPacket_send_connack(client, 0); /* send response */
+        // add for new client
+        MQTTProtocol_processQueued(client);
 	}
 	MQTTSPacket_free_packet(pack);
 	time( &(client->lastContact) );
